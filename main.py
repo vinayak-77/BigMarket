@@ -4,7 +4,7 @@ import uuid
 db = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="Vinayak457",
+  password="manavin03",
   database="BigMarket"
 )
 Cursor = db.cursor()
@@ -36,12 +36,13 @@ while True:
             password=input()
             Cursor.execute("SELECT * FROM USER WHERE USERNAME='{}' AND PASSWORD='{}';".format(user,password))
             user = Cursor.fetchall()[0]
-            Cursor.execute("SELECT * FROM CUSTOMER WHERE USERNAME='{}';".format(user[0]))
-            cid = Cursor.fetchall()[0][0]
-
             if(user==[]):
                 print("Invalid credentials")
                 continue
+            Cursor.execute("SELECT * FROM CUSTOMER WHERE USERNAME='{}';".format(user[0]))
+
+            cid = Cursor.fetchall()[0][0]
+
             print("You are Succesfully logged in")
             while True:
                 print("""
@@ -64,7 +65,7 @@ while True:
                     Cursor.execute("SELECT Products.ProductID,PRODUCTS.ProductName,Count(Products.ProductID) as Frequency FROM PRODUCTS JOIN ORDER_PRODUCT ON PRODUCTS.ProductID = ORDER_PRODUCT.ProductID JOIN Orders ON ORDERS.OrderID=ORDER_PRODUCT.OrderID JOIN Category ON PRODUCTS.CategoryID=Category.CategoryID WHERE Category.CategoryName='{}' GROUP BY Products.ProductID,Products.ProductName ORDER BY Frequency desc;".format(category))
                     products = Cursor.fetchall()
                     for i in products:
-                        print(i+"\n")
+                        print(i)
                 elif(x3==3):
                     #Query to Add product to cart_product
                     print("Enter a Product ID: ")
@@ -113,7 +114,7 @@ while True:
                             Cursor.execute("select retailerid from products where productid='{}';".format(i[7]))
                             retailerid = Cursor.fetchall()[0][0]
                             print(retailerid)
-                            Cursor.execute("insert into orders values('{}','{}','{}','{}','{}');".format(orderid,remarks,date,retailerid,cid))
+                            Cursor.execute("insert into orders values('{}','{}','{}','{}','{}');".format(orderid,remarks,date,cid,retailerid))
                             Cursor.execute("insert into order_product values('{}','{}');".format(orderid,i[7]))
                         
                     elif(s.lower()=="n"):
