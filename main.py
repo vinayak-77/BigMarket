@@ -40,8 +40,8 @@ while True:
                 print("Invalid credentials")
                 continue
             Cursor.execute("SELECT * FROM CUSTOMER WHERE USERNAME='{}';".format(user[0]))
-
-            cid = Cursor.fetchall()[0][0]
+            Customer=Cursor.fetchall()[0]
+            cid = Customer[0]
 
             print("You are Succesfully logged in")
             while True:
@@ -145,6 +145,9 @@ while True:
             if(user==[]):
                 print("Invalid credentials")
                 continue
+            Cursor.execute("SELECT * FROM RETAILER WHERE USERNAME='{}';".format(user[0]))
+            retailer=Cursor.fetchall()[0]
+            rid = retailer[0]
             print("You are Succesfully logged in")
             while True:
                 print("""
@@ -153,8 +156,7 @@ while True:
                 3)Remove products from catalogue
                 4)Check catalogue
                 5)Check stats
-                6)Check Reviews and grievances against products
-                7)logout
+                6)logout
                 """)
                 x6=int(input())
                 if(x6==1):
@@ -168,7 +170,10 @@ while True:
                     pass
                 elif(x6==4):
                     #Query to look at products
-                    pass
+                    print(rid)
+                    Cursor.execute("select * from products where retailerid='{}';".format(rid))
+                    products=Cursor.fetchall()
+                    print(products)
                 elif(x6==5):
                     print("""
                     1)Look at earnings
@@ -180,8 +185,7 @@ while True:
                     x7=int(input())
                     
                     if(x7==1):
-                        #Query to get total earnings
-                        pass
+                        print(retailer[1])
                     elif(x7==2):
                         #Query to check most popular products sold by retailer
                         pass
@@ -194,21 +198,22 @@ while True:
                     else:
                         print("Invalid Arguments")
 
+                # elif(x6==6):
+                #     print("""
+                #     1)Check Reviews
+                #     2)Check Grievances
+                #     """)
+                #     x8=int(input())
+                #     if(x8==1):
+                #         #Query to get reviews
+                #         Cursor.execute("SELECT *")
+                #         pass
+                #     elif(x8==2):
+                #         #Query to get grievances
+                #         pass
+                #     else:
+                #         print("Invalid arguments")
                 elif(x6==6):
-                    print("""
-                    1)Check Reviews
-                    2)Check Grievances
-                    """)
-                    x8=int(input())
-                    if(x8==1):
-                        #Query to get reviews
-                        pass
-                    elif(x8==2):
-                        #Query to get grievances
-                        pass
-                    else:
-                        print("Invalid arguments")
-                elif(x6==7):
                     user=None
                     break
                 else:
