@@ -1,9 +1,10 @@
 import mysql.connector
+import uuid
 
 db = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="manavin03",
+  password="Vinayak457",
   database="BigMarket"
 )
 Cursor = db.cursor()
@@ -14,6 +15,7 @@ while True:
     1) Enter as User
     2) Enter as retailer
     3) Enter as Admin
+    4) Exit
     """)
     x1=int(input())
     user=None
@@ -23,14 +25,20 @@ while True:
         1)Register
         2)Login
         """)
+        
         x2=int(input())
         if(x2==1):
             pass
         elif(x2==2):
+            print("Enter your Username: ")
             user=input()
+            print("Enter your Password: ")
             password=input()
             Cursor.execute("SELECT * FROM USER WHERE USERNAME='{}' AND PASSWORD='{}';".format(user,password))
             user = Cursor.fetchall()[0]
+            Cursor.execute("SELECT * FROM CUSTOMER WHERE USERNAME='{}';".format(user[0]))
+            cid = Cursor.fetchall()[0][0]
+
             if(user==[]):
                 print("Invalid credentials")
                 continue
@@ -50,24 +58,37 @@ while True:
                     #Query for top 10 products
                     pass
                 elif(x3==2):
-                    #Query to return top 10 products of the category
-                    pass
+                    #Query to return popular products of the category
+                    print("Enter the category you want to search for: ")
+                    category = input()
+                    Cursor.execute("SELECT Products.ProductID,PRODUCTS.ProductName,Count(Products.ProductID) as Frequency FROM PRODUCTS JOIN ORDER_PRODUCT ON PRODUCTS.ProductID = ORDER_PRODUCT.ProductID JOIN Orders ON ORDERS.OrderID=ORDER_PRODUCT.OrderID JOIN Category ON PRODUCTS.CategoryID=Category.CategoryID WHERE Category.CategoryName='{}' GROUP BY Products.ProductID,Products.ProductName ORDER BY Frequency desc;".format(category))
+                    products = Cursor.fetchall()
+                    for i in products:
+                        print(i+"\n")
                 elif(x3==3):
                     #Query to Add product to cart_product
-                    pass
+                    print("Enter a Product ID: ")
+                    product_id = input()
+                    print("Enter the quantity: ")
+                    qty = int(input())
+                    try:
+                        Cursor.execute("insert into cart_product values('{}','{}','{}');".format(cid,product_id,qty))
+                    except:
+                        print("PRODUCT OUT OF STOCK!!!!")
                 elif(x3==4):
                     #Query to get products from cart_product of the customer
-                    Cursor.execute("select products.ProductName,products.Category,Products.stock,products. Price,products.description,Cart_Product.Quantity,Cart_Product.C artID from Cart_Product join products on products.ProductID=Cart_Product.ProductID where Cart_Product.CartID='{}';".format(user[0]))
+                    Cursor.execute("select products.ProductName,products.Category,Products.stock,products. Price,products.description,Cart_Product.Quantity,Cart_Product.CartID from Cart_Product join products on products.ProductID=Cart_Product.ProductID where Cart_Product.CartID='{}';".format(cid))
                     cart=Cursor.fetchall()
+                    
                     if(cart==[]):
                         print("Cart is empty,start shopping now")
                     else:
                         for i in cart:
-                            print(cart)
+                            print(i)
                     
                 elif(x3==5):
                     #Query to show cart and total cost 
-                    Cursor.execute("select products.ProductName,products.Category,Products.stock,products.Price,products.description,Cart_Product.Quantity,Cart_Product.CartID from Cart_Product join products on products.ProductID=Cart_Product.ProductID where Cart_Product.CartID='{}';".format(user[0]))
+                    Cursor.execute("select products.ProductName,products.Category,Products.stock,products.Price,products.description,Cart_Product.Quantity,Cart_Product.CartID,Cart_Product.Productid from Cart_Product join products on products.ProductID=Cart_Product.ProductID where Cart_Product.CartID='{}';".format(cid))
                     cart=Cursor.fetchall()
                     if(cart==[]):
                         print("Cart is empty,start shopping now")
@@ -75,9 +96,9 @@ while True:
                     else:
                         val=0
                         for i in cart:
-                            print(cart)
-                            val+=cart[3]*cart[5]
-                        print(val,"Total cost ")
+                            print(i)
+                            val+=i[3]*i[5]
+                        print("Total cost: ",val)
                         
                     print("""
                     Place The order?(y/n)
@@ -85,7 +106,16 @@ while True:
                     s=input()
                     if(s.lower()=="y"):
                         #Query to place order
-                        pass
+                        for i in cart:
+                            orderid = uuid.uuid1()
+                            date='2022-12-04 00:00:00'
+                            remarks="None"
+                            Cursor.execute("select retailerid from products where productid='{}';".format(i[7]))
+                            retailerid = Cursor.fetchall()[0][0]
+                            print(retailerid)
+                            Cursor.execute("insert into orders values('{}','{}','{}','{}','{}');".format(orderid,remarks,date,retailerid,cid))
+                            Cursor.execute("insert into order_product values('{}','{}');".format(orderid,i[7]))
+                        
                     elif(s.lower()=="n"):
                         print("Returning to previous screen")
                     else:
@@ -194,7 +224,9 @@ while True:
         name=input()
         password=input()
     else:
-        print("Invalid Arguments")
+        break
+db.commit()
+db.close()
         
 
 
