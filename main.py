@@ -4,7 +4,7 @@ import uuid
 db = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="manavin03",
+  password="Vinayak457",
   database="BigMarket"
 )
 Cursor = db.cursor()
@@ -115,7 +115,9 @@ while True:
                             retailerid = Cursor.fetchall()[0][0]
                             print(retailerid)
                             Cursor.execute("insert into orders values('{}','{}','{}','{}','{}');".format(orderid,remarks,date,cid,retailerid))
+                            db.commit()
                             Cursor.execute("insert into order_product values('{}','{}');".format(orderid,i[7]))
+                            db.commit()
                         
                     elif(s.lower()=="n"):
                         print("Returning to previous screen")
