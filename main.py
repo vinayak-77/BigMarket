@@ -4,7 +4,7 @@ import uuid
 db = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="Vinayak457",
+  password="manavin03",
   database="BigMarket"
 )
 Cursor = db.cursor()
@@ -190,13 +190,18 @@ while True:
                         print(retailer[1])
                     elif(x7==2):
                         #Query to check most popular products sold by retailer
-                        pass
+                        Cursor.execute(" select cart_product.productid,products.productname,count(*) from cart_product join products on products.productid=cart_product.productid where cart_product.productid in (select productid from products where retailerid='{}') group by productid limit 10;".format(rid))
+                        products=Cursor.fetchall()
+                        for i in products:
+                            print(i)
                     elif(x7==3):
                         #Query to check most popular category for retailer
                         pass
                     elif(x7==4):
                         #olap
-                        pass
+                        Cursor.execute("select year(orders.orderdate),sum(products.price) from retailer join products on retailer.RetailerID=products.RetailerID join order_product on order_product.productid=products.productid join orders on orders.orderid=order_product.orderid where retailer.RetailerID='{}' group by (year(orders.orderdate)) with rollup;".format(rid))
+                        data=Cursor.fetchall()
+                        print(data)
                     else:
                         print("Invalid Arguments")
 
@@ -231,6 +236,29 @@ while True:
         """)
         name=input()
         password=input()
+        if(name=="root" and password=="root"):
+            print("Logged in as admin")
+            print("""
+            1)check all the sales of a retailers in each months
+            2)get the number of products sold of each category for all retailers
+            3)find out the category of products most popular in a city
+            """)
+            x8=int(input())
+            if(x8==1):
+                Cursor.execute("select monthname(orders.orderdate),sum(products.price),retailer.retailerid from retailer join products on retailer.RetailerID=products.RetailerID join order_product on order_product.productid=products.productid join orders on orders.orderid=order_product.orderid group by monthname(orders.orderdate),retailer.retailerid with rollup;")
+                data=Cursor.fetchall()
+                print(data)
+            elif(x8==2):
+                Cursor.execute("SELECT retailer.retailerid,category.categoryid, COUNT(DISTINCT products.productid) FROM retailer join products on retailer.retailerid=products.retailerid join category ON products.categoryid =category.categoryid JOIN order_product  ON products.productid = order_product.productid GROUP BY retailer.retailerid, category.categoryid having count(distinct products.productid)>=0;")
+                data=Cursor.fetchall()
+                print(data)
+                
+            elif(x8==3):
+                Cursor.execute("select user.city,category.categoryname,count(distinct order_product.productid) as num_products from user join customer on user.username = customer.username join orders on customer.customerid = orders.cid join order_product on orders.orderid = order_product.orderid join products on order_product.productid = products.productid join category on products.categoryid = category.categoryid group by user.city,category.categoryname with rollup;")
+                data=Cursor.fetchall()
+                print(data)
+            else:
+                print("Invalid Arguments")
     else:
         break
 db.commit()
