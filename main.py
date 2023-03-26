@@ -4,7 +4,7 @@ import uuid
 db = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="Vinayak457",
+  password="manavin03",
   database="BigMarket"
 )
 Cursor = db.cursor()
@@ -262,7 +262,7 @@ while True:
                     x7=int(input())
                     
                     if(x7==1):
-                        print(retailer[1])
+                        print("Earnings are",retailer[1])
                     elif(x7==2):
                         #Query to check most popular products sold by retailer
                         Cursor.execute(" select cart_product.productid,products.productname,count(*) from cart_product join products on products.productid=cart_product.productid where cart_product.productid in (select productid from products where retailerid='{}') group by productid limit 10;".format(rid))
@@ -270,8 +270,14 @@ while True:
                         for i in products:
                             print(i)
                     elif(x7==3):
-                        #Query to check most popular category for retailer
-                        pass
+                        #Query to check most popular category for retailer(olap)
+                        Cursor.execute("select category.categoryname,count(categoryname) from category join products on category.categoryid=products.categoryid join order_product on order_product.productid=products.productid where products.retailerid = '{}' group by(categoryname) with rollup;".format(rid))
+                        data=Cursor.fetchall()
+                        print("{:<12} {}".format("Category","Frequency"))
+                        print("-" * 25)
+                        for i in data:
+                            print("{:<12} {}".format(str(i[0]),str(i[1])))
+                        
                     elif(x7==4):
                         #olap
                         Cursor.execute("select year(orders.orderdate),sum(products.price) from retailer join products on retailer.RetailerID=products.RetailerID join order_product on order_product.productid=products.productid join orders on orders.orderid=order_product.orderid where retailer.RetailerID='{}' group by (year(orders.orderdate)) with rollup;".format(rid))
@@ -283,21 +289,7 @@ while True:
                     else:
                         print("Invalid Arguments")
 
-                # elif(x6==6):
-                #     print("""
-                #     1)Check Reviews
-                #     2)Check Grievances
-                #     """)
-                #     x8=int(input())
-                #     if(x8==1):
-                #         #Query to get reviews
-                #         Cursor.execute("SELECT *")
-                #         pass
-                #     elif(x8==2):
-                #         #Query to get grievances
-                #         pass
-                #     else:
-                #         print("Invalid arguments")
+
                 elif(x6==6):
                     user=None
                     break
